@@ -13,6 +13,7 @@
     <style>
         /* --- Reset Básico, Fontes e Variáveis --- */
         :root {
+            /* Tema Claro (Padrão) */
             --primary-color: #2D3748; /* Cinza Ardósia Escuro */
             --primary-hover: #1A202C; /* Quase Preto */
             --secondary-color: #718096; /* Cinza Médio */
@@ -21,14 +22,45 @@
             --danger-hover: #C53030;
             --success-color: #38A169; /* Verde */
             --warning-color: #D69E2E; /* Amarelo/Ouro */
-            --background-color: #F7FAFC; /* Cinza Muito Claro */
+            --background-color: #F7FAFC;
             --card-background: #FFFFFF;
             --text-primary: #1A202C;
             --text-secondary: #4A5568;
-            --border-color: #E2E8F0; /* Cinza Borda */
+            --border-color: #E2E8F0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --border-radius: 10px;
+            --input-disabled-bg: #F7FAFC;
+
+            /* Cores de vencimento - Claro */
+            --due-urgent-bg: #FFF5F5;
+            --due-soon-bg: #FFFFF0;
+            --due-ok-bg: #F0FFF4;
+        }
+
+        body.dark-mode {
+            /* Tema Escuro */
+            --primary-color: #90CDF4; /* Azul Claro */
+            --primary-hover: #BEE3F8;
+            --secondary-color: #A0AEC0; /* Cinza Claro */
+            --secondary-hover: #718096;
+            --danger-color: #FC8181; /* Vermelho Claro */
+            --danger-hover: #E53E3E;
+            --success-color: #68D391; /* Verde Claro */
+            --warning-color: #F6E05E; /* Amarelo Claro */
+            --background-color: #1A202C;
+            --card-background: #2D3748;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --border-color: #4A5568;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            --input-disabled-bg: #2D3748;
+
+            /* Cores de vencimento - Escuro */
+            --due-urgent-bg: rgba(229, 62, 62, 0.2);
+            --due-soon-bg: rgba(214, 158, 46, 0.2);
+            --due-ok-bg: rgba(56, 161, 105, 0.2);
         }
 
         * {
@@ -44,7 +76,38 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s, color 0.3s;
         }
+        
+        /* --- Botão de Tema --- */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s, border-color 0.3s, transform 0.2s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-toggle i {
+            color: var(--text-primary);
+            width: 24px;
+            height: 24px;
+        }
+
 
         .container {
             max-width: 1400px;
@@ -52,13 +115,10 @@
             padding: 1.5rem;
         }
 
-        /* --- Container da Aplicação --- */
         #app-container {
-            display: none; /* Começa oculto */
+            display: none;
         }
 
-
-        /* --- Cabeçalho --- */
         header, .detail-header {
             display: flex;
             align-items: center;
@@ -71,6 +131,7 @@
             padding: 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background-color: var(--card-background);
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
         header .logo, .detail-header .logo {
@@ -97,30 +158,34 @@
             margin: 0;
         }
 
-        /* --- Botões de Ação --- */
         .actions-container {
             display: flex;
             justify-content: center;
-            gap: 0.8rem; /* Diminuído */
-            flex-wrap: wrap; /* Mantido para responsividade */
+            gap: 0.8rem;
+            flex-wrap: wrap;
             margin-bottom: 3rem;
         }
 
         .action-button, .btn-submit, .back-button, .view-details-button {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem; /* Diminuído */
-            padding: 12px 15px; /* Diminuído */
+            gap: 0.5rem;
+            padding: 12px 15px;
             border: 1px solid transparent;
             border-radius: var(--border-radius);
             background-color: var(--primary-color);
             color: var(--card-background);
-            font-size: 0.875rem; /* Diminuído */
+            font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
             text-decoration: none;
         }
+
+        .dark-mode .action-button, .dark-mode .btn-submit, .dark-mode .back-button, .dark-mode .view-details-button {
+            color: #1A202C; /* Texto escuro para botões claros */
+        }
+
 
         .action-button:hover, .btn-submit:hover, .back-button:hover, .view-details-button:hover {
             background-color: var(--primary-hover);
@@ -148,8 +213,11 @@
         .action-button.danger:hover { background-color: var(--danger-hover); }
         .action-button.warning { background-color: var(--warning-color); color: var(--text-primary); }
         .action-button.warning:hover { background-color: #B7791F; }
+        
+        .dark-mode .action-button.warning {
+             color: #1A202C;
+        }
 
-        /* --- Formulários e Contêineres Principais --- */
         .entry-form-container, .data-table-container {
             background-color: var(--card-background);
             padding: 2rem 2.5rem;
@@ -157,6 +225,7 @@
             box-shadow: var(--shadow);
             margin-bottom: 3rem;
             border: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
         h2 {
@@ -171,40 +240,11 @@
             gap: 1.25rem;
             margin-top: 1.5rem;
         }
-
-        @media (min-width: 768px) {
-            .form-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .form-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
+        
         .form-group {
             display: flex;
             flex-direction: column;
         }
-
-        .form-group-obs {
-            grid-column: span 1;
-        }
-
-        @media (min-width: 768px) {
-            .form-group-obs {
-                grid-column: span 2;
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .form-group-obs {
-                grid-column: span 2;
-            }
-        }
-
 
         label {
             margin-bottom: 0.5rem;
@@ -220,12 +260,21 @@
             border-radius: var(--border-radius);
             font-size: 0.95rem;
             font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            background-color: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s, color 0.3s;
+            background-color: var(--card-background);
+            color: var(--text-primary);
+        }
+        
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active  {
+            -webkit-box-shadow: 0 0 0 30px var(--card-background) inset !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
         }
 
         input:disabled {
-            background-color: #F7FAFC;
+            background-color: var(--input-disabled-bg);
             cursor: not-allowed;
             color: var(--text-secondary);
         }
@@ -233,7 +282,11 @@
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(45, 55, 72, 0.15);
+            box-shadow: 0 0 0 3px rgba(144, 205, 244, 0.5);
+        }
+        
+        .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
+             box-shadow: 0 0 0 3px rgba(144, 205, 244, 0.25);
         }
 
         .select-with-button {
@@ -254,7 +307,10 @@
         .btn-add-inside:hover {
             background-color: #E2E8F0;
         }
-
+        
+        .dark-mode .btn-add-inside:hover {
+            background-color: #4A5568;
+        }
 
         .btn-submit {
             grid-column: 1 / -1;
@@ -267,8 +323,6 @@
             margin-right: auto;
         }
 
-
-        /* --- Tabela --- */
         .table-header {
             display: flex;
             justify-content: space-between;
@@ -312,6 +366,7 @@
             width: 100%;
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
+            transition: border-color 0.3s;
         }
         table {
             width: 100%;
@@ -323,6 +378,7 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
+            transition: border-color 0.3s;
         }
 
         td {
@@ -342,6 +398,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-secondary);
+            transition: background-color 0.3s;
         }
 
         tbody tr {
@@ -355,6 +412,9 @@
         tbody tr:hover {
             background-color: #EDF2F7;
         }
+        .dark-mode tbody tr:hover {
+            background-color: #4A5568;
+        }
 
         .status {
             padding: 6px 14px;
@@ -367,6 +427,9 @@
         }
         .status-locado { background-color: #C6F6D5; color: #22543D; }
         .status-parcial { background-color: #FEEBC8; color: #9C4221; }
+
+        .dark-mode .status-locado { background-color: var(--success-color); color: #1A202C; }
+        .dark-mode .status-parcial { background-color: var(--warning-color); color: #1A202C; }
 
         .btn-status {
             background-color: transparent;
@@ -384,9 +447,11 @@
             background-color: #E2E8F0;
             color: var(--primary-color);
         }
+        .dark-mode .btn-status:hover {
+            background-color: #718096;
+            color: var(--text-primary);
+        }
 
-
-        /* --- Modal --- */
         .modal {
             display: none; 
             position: fixed;
@@ -410,6 +475,7 @@
             position: relative;
             box-shadow: var(--shadow-lg);
             animation: slide-down 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: background-color 0.3s;
         }
 
         .modal-content.large {
@@ -444,13 +510,13 @@
             margin-top: 1.5rem;
         }
 
-        /* Modal de Vencimentos */
         .vencimentos-list {
             margin-top: 1.5rem;
             max-height: 45vh;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
+            transition: border-color 0.3s;
         }
 
         .vencimento-item {
@@ -459,6 +525,7 @@
             align-items: center;
             padding: 1.25rem;
             border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s;
         }
 
         .vencimento-item:last-child { border-bottom: none; }
@@ -487,9 +554,8 @@
             margin-top: 2rem;
         }
 
-        /* --- Novas Views (Páginas Simuladas) --- */
         .view {
-            display: none; /* As views começam ocultas e são gerenciadas pelo JS */
+            display: none;
         }
 
         .view-header {
@@ -499,11 +565,16 @@
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s;
         }
 
         .view-header h1 {
             font-size: 2rem;
             margin: 0;
+        }
+        
+        #employee-list-view .data-table-container {
+            padding: 2rem;
         }
 
         .list-container {
@@ -514,6 +585,7 @@
             padding: 2rem;
             border-radius: var(--border-radius);
             border: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
         .list-item {
@@ -522,6 +594,7 @@
             align-items: center;
             padding: 1.25rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s;
         }
         .list-item:last-child {
             border-bottom: none;
@@ -540,14 +613,31 @@
         .view-details-button:hover {
             background-color: #2F855A;
         }
+        .dark-mode .view-details-button:hover {
+            background-color: #9AE6B4;
+        }
+        
+        tbody tr.due-urgent { background-color: var(--due-urgent-bg); }
+        tbody tr.due-soon   { background-color: var(--due-soon-bg); }
+        tbody tr.due-ok     { background-color: var(--due-ok-bg); }
 
-        /* --- Modal de Senha --- */
+        tbody tr.due-urgent:hover,
+        tbody tr.due-soon:hover,
+        tbody tr.due-ok:hover {
+            background-color: #EDF2F7;
+        }
+        .dark-mode tbody tr.due-urgent:hover,
+        .dark-mode tbody tr.due-soon:hover,
+        .dark-mode tbody tr.due-ok:hover {
+            background-color: #4A5568;
+        }
+
         .modal-overlay {
-            display: flex; /* Alterado para flex para centralizar */
+            display: flex;
             align-items: center;
             justify-content: center;
             position: fixed;
-            z-index: 2000; /* Z-index alto para ficar sobre tudo */
+            z-index: 2000;
             left: 0;
             top: 0;
             width: 100%;
@@ -563,7 +653,7 @@
         #password-form .btn-submit {
             margin-top: 0.5rem;
             width: 100%;
-            max-width: none; /* Reset max-width */
+            max-width: none;
         }
 
         .error-message {
@@ -571,11 +661,18 @@
             font-weight: 500;
             text-align: center;
             margin-top: 1rem;
-            height: 1.2em; /* Garante espaço mesmo quando vazio */
+            height: 1.2em;
         }
 
+        @media (min-width: 769px) {
+            .form-grid { grid-template-columns: repeat(3, 1fr); }
+            .form-group-obs { grid-column: span 2; }
+            @media (min-width: 1200px) {
+                .form-grid { grid-template-columns: repeat(4, 1fr); }
+                .form-group-obs { grid-column: span 2; }
+            }
+        }
 
-        /* --- Responsividade e Visualização em Card --- */
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -586,12 +683,11 @@
             .header-text, .detail-header .header-text { text-align: center; }
             .form-grid { grid-template-columns: 1fr; }
             .table-header { flex-direction: column; align-items: stretch; }
-            .table-filters { grid-template-columns: 1fr; } /* Filtros empilhados */
+            .table-filters { grid-template-columns: 1fr; }
             .vencimento-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .list-item { flex-direction: column; align-items: stretch; gap: 1rem; }
-            .entry-form-container, .data-table-container { padding: 1.5rem; }
+            .entry-form-container, .data-table-container, #employee-list-view .data-table-container { padding: 1.5rem; }
 
-            /* --- ESTILOS PARA VISUALIZAÇÃO EM CARD (MOBILE) --- */
             .table-wrapper.card-view {
                 border: none;
                 overflow-x: hidden;
@@ -606,7 +702,7 @@
             }
 
             .table-wrapper.card-view thead {
-                display: none; /* Oculta o cabeçalho da tabela em mobile */
+                display: none;
             }
 
             .table-wrapper.card-view tr {
@@ -616,7 +712,24 @@
                 border: 1px solid var(--border-color);
                 background-color: var(--card-background);
                 padding: 0;
+                position: relative;
+                overflow: hidden;
             }
+            .table-wrapper.card-view tr::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 5px;
+                height: 100%;
+                background-color: transparent;
+                transition: background-color 0.3s ease;
+            }
+            
+            .table-wrapper.card-view tr.due-urgent::after { background-color: var(--danger-color); }
+            .table-wrapper.card-view tr.due-soon::after { background-color: var(--warning-color); }
+            .table-wrapper.card-view tr.due-ok::after { background-color: var(--success-color); }
+
             .table-wrapper.card-view tr:last-child {
                 margin-bottom: 0;
             }
@@ -643,7 +756,6 @@
                 margin-right: 1rem;
             }
 
-            /* Ajustes finos para colunas específicas no modo card */
             .table-wrapper.card-view .status {
                 text-align: right;
                 width: auto;
@@ -656,6 +768,11 @@
     </style>
 </head>
 <body>
+    
+    <!-- Botão de Alternar Tema -->
+    <button id="theme-toggle" class="theme-toggle" title="Alternar tema">
+        <i data-lucide="moon"></i>
+    </button>
 
     <!-- MODAL DE SENHA -->
     <div id="password-modal" class="modal-overlay">
@@ -746,7 +863,17 @@
                     <a href="#" class="back-button"><i data-lucide="arrow-left"></i> Voltar</a>
                     <h1>Lista de Funcionários</h1>
                 </div>
-                <div id="employee-list-container" class="list-container"></div>
+                <div class="data-table-container">
+                    <div class="table-filters">
+                        <div class="filter-group">
+                            <i data-lucide="search" class="filter-icon"></i>
+                            <input type="text" id="filterEmployeeList" placeholder="Filtrar por nome do funcionário...">
+                        </div>
+                    </div>
+                    <div id="employee-list-container" class="list-container">
+                        <!-- Lista de funcionários será inserida aqui pelo JS -->
+                    </div>
+                </div>
             </div>
         </div>
 

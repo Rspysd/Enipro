@@ -1,4 +1,30 @@
 document.addEventListener('DOMContentLoaded', function () {
+    
+    // --- LÓGICA DE TEMA (MODO NOTURNO) ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggle.innerHTML = '<i data-lucide="moon"></i>';
+        }
+        lucide.createIcons();
+    };
+
+    themeToggle.addEventListener('click', () => {
+        const newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+        localStorage.setItem('theme', newTheme);
+        applyTheme(newTheme);
+    });
+
+    // Carrega o tema salvo ao iniciar a página
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+
 
     // --- Referências Iniciais do DOM ---
     const passwordModal = document.getElementById('password-modal');
@@ -60,6 +86,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const filterFuncionario = document.getElementById('filterFuncionario');
         const filterStatus = document.getElementById('filterStatus');
 
+        // Filtro da lista de funcionários
+        const filterEmployeeList = document.getElementById('filterEmployeeList');
+
         // Filtros da página de relatório (Dashboard)
         const filterClienteDashboard = document.getElementById('filterClienteDashboard');
         const filterEquipamentoDashboard = document.getElementById('filterEquipamentoDashboard');
@@ -92,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (employee) {
                     renderEmployeeDetails(employeeId, employee.nome);
                 } else {
-                     window.location.hash = '';
+                     window.location.hash = '#employee-list'; // Volta para a lista se o funcionário não for encontrado
                 }
             } else if (hash === '#employee-list') {
                 renderEmployeeList();
@@ -171,7 +200,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const loadSelectOptions = (refName, selectElement, placeholder) => {
             database.ref(refName).on('value', (snapshot) => {
                 const data = snapshot.val();
-                if(refName === 'funcionarios') { funcionariosAtuais = data || {}; }
+                if(refName === 'funcionarios') { 
+                    funcionariosAtuais = data || {}; 
+                    if (window.location.hash === '#employee-list') {
+                        renderEmployeeList();
+                    }
+                }
                 if (refName === 'clientes') { clientesData = data || {}; }
                 
                 const selectedValue = selectElement.value;
@@ -244,6 +278,25 @@ document.addEventListener('DOMContentLoaded', function () {
             return proximaData.toISOString().split('T')[0];
         };
 
+        const getDueDateStatus = (proximoVencimentoStr) => {
+            if (!proximoVencimentoStr) return ''; 
+
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const dataVencimento = new Date(proximoVencimentoStr + 'T03:00:00Z');
+            const diffTime = dataVencimento - hoje;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 3) {
+                return 'due-urgent'; // Vence em até 3 dias (ou já venceu)
+            } else if (diffDays <= 7) {
+                return 'due-soon';   // Vence em até 7 dias
+            } else {
+                return 'due-ok';     // Vencimento em mais de 7 dias
+            }
+        };
+
         const applyFiltersAndRender = () => {
             const clienteQuery = filterCliente.value.toLowerCase();
             const equipamentoQuery = filterEquipamento.value.toLowerCase();
@@ -269,7 +322,11 @@ document.addEventListener('DOMContentLoaded', function () {
             filteredKeys.forEach(key => {
                 const item = lancamentosAtuais[key];
                 const proximoVencimentoStr = calcularProximoVencimento(item.dataInicio, item.frequencia, item.reagendamentoAutomatico);
+                const dueDateClass = getDueDateStatus(proximoVencimentoStr);
+                
                 const row = document.createElement('tr');
+                row.className = dueDateClass;
+
                 let statusClass = item.status === 'Locado' ? 'status-locado' : (item.status === 'Parcial' ? 'status-parcial' : '');
                 const formatarFrequencia = (freq) => {
                     if (!freq) return 'N/A';
@@ -308,9 +365,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // --- LÓGICA DE VISUALIZAÇÃO DE FUNCIONÁRIOS ---
         const renderEmployeeList = () => {
             const container = document.getElementById('employee-list-container');
+            if (!container) return;
             container.innerHTML = '';
-            for(const key in funcionariosAtuais) {
-                const funcionario = funcionariosAtuais[key];
+
+            const filterQuery = filterEmployeeList.value.toLowerCase();
+
+            const filteredEmployees = Object.entries(funcionariosAtuais).filter(([key, funcionario]) => {
+                return funcionario.nome.toLowerCase().includes(filterQuery);
+            });
+
+            if (filteredEmployees.length === 0) {
+                container.innerHTML = '<p>Nenhum funcionário encontrado.</p>';
+            }
+
+            for(const [key, funcionario] of filteredEmployees) {
                 const item = document.createElement('div');
                 item.className = 'list-item';
                 item.innerHTML = `
@@ -323,15 +391,21 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             lucide.createIcons();
         };
+        
+        filterEmployeeList.addEventListener('input', renderEmployeeList);
 
         const renderEmployeeDetails = (employeeId, employeeName) => {
             const tableBody = document.getElementById('employeeDetailTableBody');
             document.getElementById('employee-detail-title').textContent = `${employeeName}`;
             tableBody.innerHTML = '';
 
-            Object.values(lancamentosAtuais).filter(item => item.funcionarioId === employeeId).forEach(item => {
+            Object.values(lancamentosAtuais).filter(item => item.funcionarioId === employeeId && item.status !== 'Devolvido').forEach(item => {
                 const proximoVencimentoStr = calcularProximoVencimento(item.dataInicio, item.frequencia, item.reagendamentoAutomatico);
+                const dueDateClass = getDueDateStatus(proximoVencimentoStr);
+                
                 const row = document.createElement('tr');
+                row.className = dueDateClass;
+                
                 let statusClass = item.status === 'Locado' ? 'status-locado' : (item.status === 'Parcial' ? 'status-parcial' : '');
                 const formatarFrequencia = (freq) => {
                      if (!freq) return 'N/A';
@@ -378,7 +452,11 @@ document.addEventListener('DOMContentLoaded', function () {
             filteredKeys.forEach(key => {
                 const item = lancamentosAtuais[key];
                 const proximoVencimentoStr = calcularProximoVencimento(item.dataInicio, item.frequencia, item.reagendamentoAutomatico);
+                const dueDateClass = getDueDateStatus(proximoVencimentoStr);
+
                 const row = document.createElement('tr');
+                row.className = dueDateClass;
+
                 let statusClass = item.status === 'Locado' ? 'status-locado' : (item.status === 'Parcial' ? 'status-parcial' : '');
                 const formatarFrequencia = (freq) => {
                     if (!freq) return 'N/A';
@@ -523,9 +601,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // --- INICIALIZAÇÃO PÓS-AUTENTICAÇÃO ---
         window.addEventListener('hashchange', router);
-        // Roda o roteador para carregar a view correta
         router();
-        // Inicia a verificação de vencimentos do dia
         lancamentosRef.once('value', () => {
            if (window.location.hash === '' || window.location.hash === '#') {
                verificarVencimentos();
@@ -549,20 +625,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- LÓGICA DE INICIALIZAÇÃO DA PÁGINA ---
     if (sessionStorage.getItem('isAuthenticated') === 'true') {
-        // Se o usuário já está autenticado na sessão, esconde o modal e inicializa o app.
         passwordModal.style.display = 'none';
         initializeApp();
     } else {
         const currentHash = window.location.hash;
-        // Verifica se a URL é a página principal (sem hash ou apenas #).
         if (currentHash === '' || currentHash === '#') {
-            // Se for a página principal e não estiver autenticado, mostra o modal.
             passwordModal.style.display = 'flex';
             passwordForm.addEventListener('submit', handlePasswordSubmit);
             passwordInput.focus();
         } else {
-            // Se for uma página interna (deep link) como #dashboard ou #employee-list,
-            // permite o acesso direto e inicializa o app sem pedir senha.
             passwordModal.style.display = 'none';
             initializeApp();
         }
