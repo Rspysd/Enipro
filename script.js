@@ -65,6 +65,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const genericModal = document.getElementById('genericModal');
         const statusModal = document.getElementById('statusModal');
         const vencimentosModal = document.getElementById('vencimentosModal');
+        const employeeDueModal = document.getElementById('employeeDueModal');
+        const employeeDueModalClose = document.getElementById('employeeDueModalClose');
+        const employeeDueList = document.getElementById('employeeDueList');
+
         const modalTitle = document.getElementById('modalTitle');
         const modalFields = document.getElementById('modalFields');
         const modalForm = document.getElementById('modalForm');
@@ -121,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (employee) {
                     renderEmployeeDetails(employeeId, employee.nome);
                 } else {
-                     window.location.hash = '#employee-list'; // Volta para a lista se o funcionário não for encontrado
+                     window.location.hash = '#employee-list'; 
                 }
             } else if (hash === '#employee-list') {
                 renderEmployeeList();
@@ -164,13 +168,15 @@ document.addEventListener('DOMContentLoaded', function () {
             genericModal.style.display = 'none';
             statusModal.style.display = 'none';
             vencimentosModal.style.display = 'none';
+            employeeDueModal.style.display = 'none';
             if (modalForm) modalForm.reset();
         };
 
         document.getElementById('genericModalClose')?.addEventListener('click', closeModal);
         document.getElementById('vencimentosModalClose')?.addEventListener('click', closeModal);
+        employeeDueModalClose?.addEventListener('click', closeModal);
         window.addEventListener('click', (event) => {
-            if (event.target == genericModal || event.target == statusModal || event.target == vencimentosModal) {
+            if (event.target == genericModal || event.target == statusModal || event.target == vencimentosModal || event.target == employeeDueModal) {
                 closeModal();
             }
         });
@@ -393,11 +399,63 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         
         filterEmployeeList.addEventListener('input', renderEmployeeList);
+        
+        const checkAndShowEmployeeDueModal = (employeeId) => {
+            const itemsDueSoon = [];
+
+            for (const key in lancamentosAtuais) {
+                const item = lancamentosAtuais[key];
+                if (item.funcionarioId === employeeId && item.status !== 'Devolvido') {
+                    const proximoVencimentoStr = calcularProximoVencimento(item.dataInicio, item.frequencia, item.reagendamentoAutomatico);
+                    
+                    if (proximoVencimentoStr) {
+                        const hoje = new Date();
+                        hoje.setHours(0, 0, 0, 0);
+                        const dataVencimento = new Date(proximoVencimentoStr + 'T03:00:00Z');
+                        const diffTime = dataVencimento - hoje;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (diffDays >= 0 && diffDays <= 7) {
+                            itemsDueSoon.push({
+                                ...item,
+                                vencimento: new Date(proximoVencimentoStr + 'T03:00:00Z').toLocaleDateString('pt-BR')
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (itemsDueSoon.length > 0) {
+                employeeDueList.innerHTML = ''; 
+
+                itemsDueSoon.sort((a,b) => new Date(a.dataInicio) - new Date(b.dataInicio));
+
+                itemsDueSoon.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'vencimento-item';
+                    itemDiv.innerHTML = `
+                        <div class="vencimento-item-info">
+                            ${item.equipamentoNome}
+                            <span>Cliente: ${item.clienteNome}</span>
+                        </div>
+                        <div class="vencimento-item-info">
+                            <span>Vence em: ${item.vencimento}</span>
+                        </div>
+                    `;
+                    employeeDueList.appendChild(itemDiv);
+                });
+
+                employeeDueModal.style.display = 'block';
+                lucide.createIcons();
+            }
+        };
 
         const renderEmployeeDetails = (employeeId, employeeName) => {
             const tableBody = document.getElementById('employeeDetailTableBody');
             document.getElementById('employee-detail-title').textContent = `${employeeName}`;
             tableBody.innerHTML = '';
+            
+            checkAndShowEmployeeDueModal(employeeId);
 
             Object.values(lancamentosAtuais).filter(item => item.funcionarioId === employeeId && item.status !== 'Devolvido').forEach(item => {
                 const proximoVencimentoStr = calcularProximoVencimento(item.dataInicio, item.frequencia, item.reagendamentoAutomatico);

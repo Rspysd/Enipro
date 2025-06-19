@@ -552,6 +552,31 @@
             justify-content: flex-end;
             margin-top: 2rem;
         }
+        
+        #employeeDueModal .modal-content h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--warning-color);
+        }
+        
+        .dark-mode #employeeDueModal .modal-content h2 {
+            color: var(--warning-color);
+        }
+
+        #employeeDueList .vencimento-item-info span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .modal-footer-note {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+
 
         .view {
             display: none;
@@ -931,6 +956,19 @@
         <div id="genericModal" class="modal"><div class="modal-content"><span class="close-button" id="genericModalClose">&times;</span><h2 id="modalTitle"></h2><form id="modalForm"><div id="modalFields"></div><button type="submit" class="btn-submit"><i data-lucide="save"></i> Salvar</button></form></div></div>
         <div id="statusModal" class="modal"><div class="modal-content"><h2 id="statusModalTitle">Alterar Status</h2><p>Qual o novo status para este item?</p><div class="status-modal-actions"><button id="btnStatusParcial" class="action-button warning"><i data-lucide="package-open"></i> Devolução Parcial</button><button id="btnStatusCompleto" class="action-button danger"><i data-lucide="package-check"></i> Devolução Completa</button><button id="btnStatusCancelar" class="action-button secondary"><i data-lucide="x"></i> Cancelar</button></div></div></div>
         <div id="vencimentosModal" class="modal"><div class="modal-content large"><span class="close-button" id="vencimentosModalClose">&times;</span><h2>Ações de Vencimento</h2><p>Os seguintes itens venceram hoje. Selecione uma ação para cada um:</p><div id="vencimentosList" class="vencimentos-list"></div><div class="modal-actions-footer"><button id="btnConfirmarAcoesVencimento" class="btn-submit"><i data-lucide="check-square"></i> Confirmar Ações</button></div></div></div>
+
+        <!-- Modal de Avisos de Vencimento do Funcionário -->
+        <div id="employeeDueModal" class="modal">
+            <div class="modal-content large">
+                <span class="close-button" id="employeeDueModalClose">&times;</span>
+                <h2><i data-lucide="alert-triangle"></i> Itens Próximos do Vencimento</h2>
+                <p>Os seguintes itens sob sua responsabilidade estão próximos da data de vencimento:</p>
+                <div id="employeeDueList" class="vencimentos-list">
+                    <!-- Itens serão inseridos aqui pelo JS -->
+                </div>
+                <p class="modal-footer-note">Por favor, verifique a necessidade de renovação ou agende a devolução dos equipamentos.</p>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
