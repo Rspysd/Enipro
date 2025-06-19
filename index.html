@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Obras - Enipro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="enipro.png" type="image/png">
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <!-- VIEW PRINCIPAL -->
+    <div id="main-view" class="view">
+        <div class="container">
+            <header>
+                 <img src="enipro.png" alt="Logo da Enipro" class="logo" onerror="this.onerror=null;this.src='https://placehold.co/150x50/ffffff/000000?text=Enipro';">
+                <div class="header-text">
+                    <h1>Gerenciador de Obras</h1>
+                    <p>Controle de entradas e saídas de equipamentos em tempo real.</p>
+                </div>
+            </header>
+
+            <section class="actions-container">
+                <button id="btnNovaObra" class="action-button"><i data-lucide="plus-circle"></i> Cadastrar Obra</button>
+                <button id="btnNovoFornecedor" class="action-button"><i data-lucide="truck"></i> Cadastrar Fornecedor</button>
+                <button id="btnNovoEquipamento" class="action-button"><i data-lucide="wrench"></i> Cadastrar Equipamento</button>
+                <button id="btnNovoFuncionario" class="action-button"><i data-lucide="user-plus"></i> Cadastrar Funcionário</button>
+                <a href="#employee-list" class="action-button secondary"><i data-lucide="users"></i> Ver Funcionários</a>
+                <a href="#dashboard" class="action-button secondary"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            </section>
+
+            <main class="entry-form-container">
+                <h2>Lançamento de Equipamento</h2>
+                <form id="main-form">
+                    <div class="form-grid">
+                        <div class="form-group"><label for="selectCliente">Cliente/Obra</label><div class="select-with-button"><select id="selectCliente" required></select><button type="button" id="btnFastAddCliente" class="btn-add-inside" title="Adicionar Novo Cliente">+</button></div></div>
+                        <div class="form-group"><label for="inputEndereco">Endereço</label><input type="text" id="inputEndereco" disabled placeholder="Preenchido automaticamente"></div>
+                        <div class="form-group"><label for="inputCidade">Cidade</label><input type="text" id="inputCidade" disabled placeholder="Preenchido automaticamente"></div>
+                        <div class="form-group"><label for="selectFornecedor">Fornecedor</label><div class="select-with-button"><select id="selectFornecedor" required></select><button type="button" id="btnFastAddFornecedor" class="btn-add-inside" title="Adicionar Novo Fornecedor">+</button></div></div>
+                        <div class="form-group"><label for="selectEquipamento">Equipamento</label><div class="select-with-button"><select id="selectEquipamento" required></select><button type="button" id="btnFastAddEquipamento" class="btn-add-inside" title="Adicionar Novo Equipamento">+</button></div></div>
+                        <div class="form-group"><label for="selectFuncionario">Funcionário</label><div class="select-with-button"><select id="selectFuncionario" required></select><button type="button" id="btnFastAddFuncionario" class="btn-add-inside" title="Adicionar Novo Funcionário">+</button></div></div>
+                        <div class="form-group"><label for="inputCtr">Nº CTR</label><input type="number" id="inputCtr" required></div>
+                        <div class="form-group"><label for="inputValor">Valor da Cobrança (R$)</label><input type="number" step="0.01" id="inputValor" required></div>
+                        <div class="form-group"><label for="inputDataInicio">Data Vencimento</label><input type="date" id="inputDataInicio" required></div>
+                        <div class="form-group"><label for="selectFrequencia">Frequencia de reagendamento</label><select id="selectFrequencia"><option value="unico">Sem Reagendamento</option><option value="diario">Diário</option><option value="semanal">Semanal</option><option value="mensal">Mensal</option></select></div>
+                        <div class="form-group form-group-obs"><label for="inputObservacao">Observação</label><textarea id="inputObservacao" rows="1"></textarea></div>
+                    </div>
+                    <button type="submit" class="btn-submit"><i data-lucide="save"></i> Salvar Lançamento</button>
+                </form>
+            </main>
+
+            <section class="data-table-container">
+                <div class="table-header">
+                    <h2>Equipamentos Locados</h2>
+                    <button id="btnVerificarVencimentosHoje" class="action-button secondary"><i data-lucide="calendar-check"></i> Verificar Vencimentos do Dia</button>
+                </div>
+                <div class="table-filters">
+                    <div class="filter-group"><i data-lucide="search" class="filter-icon"></i><input type="text" id="filterCliente" placeholder="Filtrar por cliente..."></div>
+                    <div class="filter-group"><i data-lucide="search" class="filter-icon"></i><input type="text" id="filterEquipamento" placeholder="Filtrar por equipamento..."></div>
+                    <div class="filter-group"><i data-lucide="search" class="filter-icon"></i><input type="text" id="filterFornecedor" placeholder="Filtrar por fornecedor..."></div>
+                    <div class="filter-group"><i data-lucide="user" class="filter-icon"></i><input type="text" id="filterFuncionario" placeholder="Filtrar por funcionário..."></div>
+                    <div class="filter-group"><i data-lucide="list-filter" class="filter-icon"></i><select id="filterStatus"><option value="all">Todos os Status</option><option value="Locado">Locado</option><option value="Parcial">Parcial</option></select></div>
+                </div>
+                <div class="table-wrapper">
+                     <table>
+                        <thead>
+                            <tr><th>Cliente</th><th>Equipamento</th><th>Fornecedor</th><th>Funcionário</th><th>CTR</th><th>Valor</th><th>Próximo Venc.</th><th>Frequência</th><th>Status</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody id="dataTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- VIEW: Lista de Funcionários -->
+    <div id="employee-list-view" class="view">
+        <div class="container">
+            <div class="view-header">
+                <a href="#" class="back-button"><i data-lucide="arrow-left"></i> Voltar</a>
+                <h1>Lista de Funcionários</h1>
+            </div>
+            <div id="employee-list-container" class="list-container"></div>
+        </div>
+    </div>
+
+    <!-- VIEW: Detalhes do Funcionário -->
+    <div id="employee-detail-view" class="view">
+         <header class="detail-header">
+            <a href="#"><img src="enipro.png" alt="Logo da Enipro" class="logo" onerror="this.onerror=null;this.src='https://placehold.co/150x50/ffffff/000000?text=Enipro';"></a>
+            <div class="header-text">
+                <h1 id="employee-detail-title"></h1>
+                <p>Relatório de Lançamentos</p>
+            </div>
+        </header>
+        <div class="container">
+            <div class="table-wrapper">
+                 <table id="employee-detail-table">
+                    <thead>
+                        <tr><th>Cliente</th><th>Equipamento</th><th>Fornecedor</th><th>CTR</th><th>Valor</th><th>Próximo Venc.</th><th>Frequência</th><th>Status</th><th>Observação</th></tr>
+                    </thead>
+                    <tbody id="employeeDetailTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NOVA VIEW: Dashboard -->
+    <div id="dashboard-view" class="view">
+        <header class="detail-header">
+            <a href="#"><img src="enipro.png" alt="Logo da Enipro" class="logo" onerror="this.onerror=null;this.src='https://placehold.co/150x50/ffffff/000000?text=Enipro';"></a>
+            <div class="header-text">
+                <h1>Dashboard</h1>
+                <p>Visualização completa de todos os lançamentos.</p>
+            </div>
+        </header>
+        <div class="container">
+            <section class="data-table-container">
+                 <div class="table-filters">
+                    <div class="filter-group"><i data-lucide="search" class="filter-icon"></i><input type="text" id="filterClienteDashboard" placeholder="Filtrar por cliente..."></div>
+                    <div class="filter-group"><i data-lucide="search" class="filter-icon"></i><input type="text" id="filterEquipamentoDashboard" placeholder="Filtrar por equipamento..."></div>
+                    <div class="filter-group"><i data-lucide="search" class="filter-icon"></i><input type="text" id="filterFornecedorDashboard" placeholder="Filtrar por fornecedor..."></div>
+                    <div class="filter-group"><i data-lucide="user" class="filter-icon"></i><input type="text" id="filterFuncionarioDashboard" placeholder="Filtrar por funcionário..."></div>
+                    <div class="filter-group"><i data-lucide="list-filter" class="filter-icon"></i><select id="filterStatusDashboard"><option value="all">Todos os Status</option><option value="Locado">Locado</option><option value="Parcial">Parcial</option></select></div>
+                </div>
+                <div class="table-wrapper">
+                     <table id="dashboard-table">
+                        <thead>
+                            <tr><th>Cliente</th><th>Equipamento</th><th>Fornecedor</th><th>Funcionário</th><th>CTR</th><th>Valor</th><th>Próximo Venc.</th><th>Frequência</th><th>Status</th><th>Observação</th></tr>
+                        </thead>
+                        <tbody id="dashboardTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modais -->
+    <div id="genericModal" class="modal"><div class="modal-content"><span class="close-button" id="genericModalClose">&times;</span><h2 id="modalTitle"></h2><form id="modalForm"><div id="modalFields"></div><button type="submit" class="btn-submit"><i data-lucide="save"></i> Salvar</button></form></div></div>
+    <div id="statusModal" class="modal"><div class="modal-content"><h2 id="statusModalTitle">Alterar Status</h2><p>Qual o novo status para este item?</p><div class="status-modal-actions"><button id="btnStatusParcial" class="action-button warning"><i data-lucide="package-open"></i> Devolução Parcial</button><button id="btnStatusCompleto" class="action-button danger"><i data-lucide="package-check"></i> Devolução Completa</button><button id="btnStatusCancelar" class="action-button secondary"><i data-lucide="x"></i> Cancelar</button></div></div></div>
+    <div id="vencimentosModal" class="modal"><div class="modal-content large"><span class="close-button" id="vencimentosModalClose">&times;</span><h2>Ações de Vencimento</h2><p>Os seguintes itens venceram hoje. Selecione uma ação para cada um:</p><div id="vencimentosList" class="vencimentos-list"></div><div class="modal-actions-footer"><button id="btnConfirmarAcoesVencimento" class="btn-submit"><i data-lucide="check-square"></i> Confirmar Ações</button></div></div></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
